@@ -11,23 +11,25 @@ class CAService:
         self.baseDadosDF = BaseDadosCaEPI().retornarBaseDados()
         self._defineHorarioAtualizacao()
 
-    def retornarTodasAtualizacoes(self, ca: str) -> list[dict]:
+    def retornarTodasAtualizacoes(self, ca: str) -> list[dict] | None:
         dadosEPI = self.baseDadosDF.loc[self.baseDadosDF['RegistroCA'] == ca]
         if dadosEPI.empty:
             return None
         return dadosEPI.to_dict('records')
 
-    def retornarTodasInfoAtuais(self, ca: str) -> dict:
+    def retornarTodasInfoAtuais(self, ca: str) -> dict | None:
         dadosEPI = self.baseDadosDF.loc[self.baseDadosDF['RegistroCA'] == ca]
         if dadosEPI.empty:
             return None
 
         return dadosEPI.iloc[-1].to_dict()
 
-    def caValido(self, ca) -> bool:
+    def caValido(self, ca) -> bool | None:
         ca = self.retornarTodasInfoAtuais(ca)
         if ca:
             return ca['Situacao'] == 'VÁLIDO'
+
+        return None
 
     def exportarExcel(self, listaCAs: list[str], nomeArquivo: str) -> dict:
         df = self._filtrarPorCAs(listaCAs)
