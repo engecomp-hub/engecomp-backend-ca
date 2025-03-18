@@ -1,4 +1,5 @@
 import io
+import threading
 from datetime import datetime
 
 import pandas as pd
@@ -8,6 +9,7 @@ from Services.BaseDadosCaEPI import BaseDadosCaEPI
 
 class CAService:
     def __init__(self):
+        self.lock = threading.Lock()
         self.baseDadosDF = BaseDadosCaEPI().retornarBaseDados()
         self._defineHorarioAtualizacao()
 
@@ -24,12 +26,10 @@ class CAService:
 
         return dadosEPI.iloc[-1].to_dict()
 
-    def caValido(self, ca) -> bool | None:
-        ca = self.retornarTodasInfoAtuais(ca)
-        if ca:
-            return ca['Situacao'] == 'VÁLIDO'
+    def caValido(self, ca) -> bool:
+        ca_info = self.retornarTodasInfoAtuais(ca)
 
-        return None
+        return ca_info is not None and ca_info['Situacao'] == 'VÁLIDO'
 
     def exportarExcel(self, listaCAs: list[str], nomeArquivo: str) -> dict:
         df = self._filtrarPorCAs(listaCAs)
@@ -40,10 +40,8 @@ class CAService:
 
         # Converter o dataframe para um objeto Excel em memória
         output = io.BytesIO()
-        writer = pd.ExcelWriter(output, engine='xlsxwriter')
-        df.to_excel(writer, sheet_name=nomeArquivo)
-
-        writer.close()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name=nomeArquivo)
         output.seek(0)
 
         return {'success': True, 'planilha': output}
@@ -57,7 +55,8 @@ class CAService:
         return {'success': True, 'JSON': df.to_dict('records')}
 
     def _filtrarPorCAs(self, listaCAs: list[str]) -> pd.DataFrame:
-        df = self.baseDadosDF.loc[self.baseDadosDF['RegistroCA'].isin(listaCAs)]
+        with self.lock:
+            df = self.baseDadosDF.loc[self.baseDadosDF['RegistroCA'].isin(listaCAs)]
         return df.drop_duplicates('RegistroCA', keep='last')
 
     def _retornaCAsNaoEncontrado(
@@ -66,8 +65,9 @@ class CAService:
         return [ca for ca in listaCAs if ca not in df['RegistroCA'].values]
 
     def _atualizarBaseDados(self):
-        self.baseDadosDF = BaseDadosCaEPI().retornarBaseDados()
-        print('Base de Dados atualizada em', datetime.now())
+        with self.lock:
+            self.baseDadosDF = BaseDadosCaEPI().retornarBaseDados()
+            print('Base de Dados atualizada em', datetime.now())
 
     def _defineHorarioAtualizacao(self):
         horaAtualizacao = 20
