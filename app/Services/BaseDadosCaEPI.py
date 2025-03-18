@@ -76,7 +76,7 @@ class BaseDadosCaEPI:
         with open(self.nomeArquivoErros, 'w') as f:
             f.writelines(listaCAsInvalidos)
 
-    def retornarBaseDados(self) -> pd.DataFrame:
+    def retornarBaseDados(self) -> pd.DataFrame | None:
         if not os.path.exists(self.nomeArquivoBase):
             print('Aguarde o download...')
             self._baixarArquivoBaseCaEPI()
