@@ -1,0 +1,8 @@
+[ruff]
+exclude = ["venv", "__pycache__", "migrations"]
+line-length = 79
+indent-width = 4
+indent-style = "space"
+
+[tool.ruff.format]
+quote-style = "single"
