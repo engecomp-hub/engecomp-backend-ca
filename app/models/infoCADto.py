@@ -1,8 +1,9 @@
 from pydantic import BaseModel
 
+
 class InfoCADto(BaseModel):
     RegistroCA: str | None
-    DataValidade: str 
+    DataValidade: str
     Situacao: str | None
     NRProcesso: str | None
     CNPJ: str | None
