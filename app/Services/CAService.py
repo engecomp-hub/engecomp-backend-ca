@@ -12,6 +12,8 @@ class CAService:
         self.lock = threading.Lock()
         self.baseDadosDF = BaseDadosCaEPI().retornarBaseDados()
         self._defineHorarioAtualizacao()
+        self.horaAtualizacao = 20
+        self.minutoAtualizacao = 10
 
     def retornarTodasAtualizacoes(self, ca: str) -> list[dict] | None:
         dadosEPI = self.baseDadosDF.loc[self.baseDadosDF['RegistroCA'] == ca]
@@ -70,8 +72,6 @@ class CAService:
             print('Base de Dados atualizada em', datetime.now())
 
     def _defineHorarioAtualizacao(self):
-        horaAtualizacao = 20
-        minutoAtualizacao = 10
         scheduler = BackgroundScheduler()
         scheduler.start()
 
@@ -79,7 +79,7 @@ class CAService:
         scheduler.add_job(
             self._atualizarBaseDados,
             'cron',
-            hour=horaAtualizacao,
-            minute=minutoAtualizacao,
+            hour=self.horaAtualizacao,
+            minute=self.minutoAtualizacao,
             day_of_week='0-6',
         )
