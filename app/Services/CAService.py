@@ -11,9 +11,10 @@ from Services.BaseDadosCaEPI import BaseDadosCaEPI
 class CAService:
     def __init__(self):
         self.lock = threading.Lock()
-        self.baseDadosDF = BaseDadosCaEPI().retornarBaseDados()
-        self.horaAtualizacao = 20
-        self.minutoAtualizacao = 10
+        self.baseDadosProvider = BaseDadosCaEPI()
+        self.baseDadosDF = self.baseDadosProvider.retornarBaseDados()
+        self.horaAtualizacao = 12
+        self.minutoAtualizacao = 13
         self._defineHorarioAtualizacao()
 
     def retornarTodasAtualizacoes(self, ca: str) -> list[dict] | None:
@@ -69,7 +70,8 @@ class CAService:
 
     def _atualizarBaseDados(self):
         with self.lock:
-            self.baseDadosDF = BaseDadosCaEPI().retornarBaseDados()
+            base = self.baseDadosProvider
+            self.baseDadosDF = base.retornarBaseDados()
             print('Base de Dados atualizada em', datetime.now())
 
     def _defineHorarioAtualizacao(self):
