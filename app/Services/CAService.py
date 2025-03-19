@@ -1,6 +1,7 @@
 import io
 import threading
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -11,9 +12,9 @@ class CAService:
     def __init__(self):
         self.lock = threading.Lock()
         self.baseDadosDF = BaseDadosCaEPI().retornarBaseDados()
-        self._defineHorarioAtualizacao()
         self.horaAtualizacao = 20
         self.minutoAtualizacao = 10
+        self._defineHorarioAtualizacao()
 
     def retornarTodasAtualizacoes(self, ca: str) -> list[dict] | None:
         dadosEPI = self.baseDadosDF.loc[self.baseDadosDF['RegistroCA'] == ca]
@@ -72,7 +73,7 @@ class CAService:
             print('Base de Dados atualizada em', datetime.now())
 
     def _defineHorarioAtualizacao(self):
-        scheduler = BackgroundScheduler()
+        scheduler = BackgroundScheduler(timezone=ZoneInfo('America/Sao_Paulo'))
         scheduler.start()
 
         # É atualizado as 20h, mas resolvi dar uma margem de erro
