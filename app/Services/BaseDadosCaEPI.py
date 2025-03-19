@@ -19,6 +19,7 @@ class BaseDadosCaEPI:
         self = self
 
     def _baixarArquivoBaseCaEPI(self):
+        print('Aguarde o download...')
         if os.path.exists(self.nomeArquivoBase):
             os.remove(self.nomeArquivoBase)
 
@@ -34,6 +35,7 @@ class BaseDadosCaEPI:
         arquivoZip = zipfile.ZipFile(r)
 
         arquivoZip.extractall()
+        print('Download concluido e arquivo extraido!')
 
     def _transformarEmDataFrame(self):
         listaCas = self._retornarCAsSemErros()
@@ -77,10 +79,7 @@ class BaseDadosCaEPI:
             f.writelines(listaCAsInvalidos)
 
     def retornarBaseDados(self) -> pd.DataFrame | None:
-        if not os.path.exists(self.nomeArquivoBase):
-            print('Aguarde o download...')
-            self._baixarArquivoBaseCaEPI()
-            print('Download concluido!')
+        self._baixarArquivoBaseCaEPI()
 
         self._transformarEmDataFrame()
         return self.baseDadosDF
