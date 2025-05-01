@@ -14,6 +14,12 @@ class BaseDadosCaEPI:
     urlBase = 'ftp.mtps.gov.br'
     caminho = 'portal/fiscalizacao/seguranca-e-saude-no-trabalho/caepi/'
     nColunas = 19
+    fileHeader = (
+        '#NRRegistroCA|DataValidade|Situacao|NRProcesso|CNPJ|RazaoSocial|Natureza|'
+        'NomeEquipamento|DescricaoEquipamento|MarcaCA|Referencia|Cor|AprovadoParaLaudo|'
+        'RestricaoLaudo|ObservacaoAnaliseLaudo|CNPJLaboratorio|RazaoSocialLaboratorio|'
+        'NRLaudo|Norma\n'
+    )
 
     def __init__(self):
         self = self
@@ -36,6 +42,20 @@ class BaseDadosCaEPI:
 
         arquivoZip.extractall()
         print('Download concluido e arquivo extraido!')
+
+        self._verify_and_adding_file_header()
+
+    def _verify_and_adding_file_header(self):
+        with open(self.nomeArquivoBase, 'r+', encoding='latin-1') as f:
+            content = f.readlines()
+            first_line = content[0]
+            if not first_line.startswith('#NRRegistroCA'):
+                print('Cabeçalho ausente, adicionando automaticamente...')
+                content.insert(0, self.fileHeader)
+                f.seek(0)
+                f.writelines(content)
+            else:
+                print('Cabeçalho presente!')
 
     def _transformarEmDataFrame(self):
         listaCas = self._retornarCAsSemErros()
